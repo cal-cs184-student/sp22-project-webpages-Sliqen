@@ -1,7 +1,261 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #121212;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+  </style>
+  <title>CS 184 Mesh Editor</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+  <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2020</h1>
+  <h1 align="middle">Project 2: Mesh Editor</h1>
+  <h2 align="middle">Calvin Pham, CS184-the2</h2>
+
+  <br><br>
+
+      <div>
+
+          <h2 align="middle">Overview</h2>
+          <p>
+              Give a high-level overview of what you implemented in this project. Think about what you've built as a whole.
+              Share your thoughts on what interesting things you've learned from completing the project.
+          </p>
+
+          <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
+
+          <h3 align="middle">Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
+
+          <p>
+              de Casteljau's algorithm is an algorithm that repeatedly and recursively inserts new points using interpolation.
+              For this project, I implemented an algorithimn that does one step of the process of lerping every passed in point to return the number of points - 1 amount of points.
+          </p>
+
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/pt1img1.png" align="middle" width="400px" />
+                          <figcaption align="middle">E=1.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/pt1img2.png" align="middle" width="400px" />
+                          <figcaption align="middle">E=2.</figcaption>
+                      </td>
+                  </tr>
+                  <br />
+                  <tr>
+                      <td>
+                          <img src="images/pt1img3.png" align="middle" width="400px" />
+                          <figcaption align="middle">E=3.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/pt1img4.png" align="middle" width="400px" />
+                          <figcaption align="middle">E=4.</figcaption>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td>
+                          <img src="images/pt1img5.png" align="middle" width="400px" />
+                          <figcaption align="middle">E=5.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/pt1img6.png" align="middle" width="400px" />
+                          <figcaption align="middle">E=6.</figcaption>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td>
+                          <img src="images/pt1img7.png" align="middle" width="400px" />
+                          <figcaption align="middle">E=7.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/pt1img8.png" align="middle" width="400px" />
+                          <figcaption align="middle">Different configuration.</figcaption>
+                      </td>
+                  </tr>
+              </table>
+          </div>
+          <br />
+          <br />
+
+
+          <h3 align="middle">Part 2: Bezier surfaces with separable 1D de Casteljau subdivision</h3>
+          <p>
+              de Casteljau's algorithm extends to Bezier surfaces because Bezier surfaces are literally just a collection or composite of Bezier curves.
+              I implemented it to evaluate Bezier surfaces by aplying the deCsateljau algorithm towards composite parts of the inputs, which works because Bezier surfaces are a collection of Bezier curves.
+              This part is just like the previous part, but we are dealing with 3D instead of 2D, so it is straight forward.
+          </p>
+
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/teapot1.png" align="middle" width="400px" />
+                          <br />
+                          <figcaption align="middle">The teapot.</figcaption>
+                      </td>
+                  </tr>
+              </table>
+          </div>
+
+          <h2 align="middle">Section II: Sampling</h2>
+
+          <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
+          <p>
+              To implement the area weighted vertex normals, we need to first retrieve
+              halfedge's twin because starting from the halfedge alone would only read to
+              off the connected vertex, and will lead you right back to where you started, eventually.
+              Then I just looped over the twin's next()->twin() because this allows you to do a
+              clockwise traversal. In each face I summed up the normals of each face and kept a
+              count of the number of loops in order to normalize the sum of all of the area weighted
+              normals.
+          </p>
+
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/teapot3-1.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Shading without vertex normals.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/teapot3-2.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Shading with vertex normals.</figcaption>
+                      </td>
+                  </tr>
+              </table>
+          </div>
+
+          <h3 align="middle">Part 4: Half-edge flip</h3>
+          <p>
+              To implement edge flip operations, I first wrote everything down on paper to
+              figure out how it would geometrically work. Then I just followed the guide
+              linked in the spec and created variables for every single component even if
+              those components were not directly modified. Then I reassigned everything into
+              their respective post transformation values. There is nothing interesting about
+              my code, it's all straightforward.
+          </p>
+
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/reg4-1.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Teapot without vertex normals.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/mod4-1.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Flipped teapot without vertex normals.</figcaption>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td>
+                          <img src="images/vn4-2.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Teapot with vertex normals.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/mod4-2.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Flipped teapot with vertex normals.</figcaption>
+                      </td>
+                  </tr>
+              </table>
+          </div>
+
+
+
+          <h3 align="middle">Part 5: Half-edge split</h3>
+          <p>
+              To implement the edge split operation, I first drew everyting down on paper to figure out how the re-assignments would work.
+              Along with help from an image someone wrote on piazza, I modified part 4's code and added in new objects to set things up. Then I modified everything in accordance to my drawing.
+              What I found interesting was that what you assign the face and edges to did not modify the split function in anyway, as long as you assigned it to one of the 3 avaliable options within the triangle, though it may not bode well for part 6.
+          </p>
+
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/tea5-normal.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Pre-split teapot.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/tea5-splits.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Post-split teapot.</figcaption>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td>
+                          <img src="images/tea5-normal.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Pre-split-flip teapot.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/tea5-splits-flips.png" align="middle" width="400px" />
+                          <figcaption align="middle"> Post-split-flip teapot.</figcaption>
+                      </td>
+                  </tr>
+              </table>
+          </div>
+
+
+          <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
+          <p>
+              I implemented the subdivision by exactly following the steps provided in the code comments.
+              My code looks correct, but unfortunately everything doesn't work as planned. Every call makes it so that the object shrivels up.
+              Sharp corners and edges shrivel up.
+              This effect can be reduced by pre-splitting some edges.
+              For cube.dae, we can pre-process the cube with edge flips and splits so that they can subdivide symmetrically. Even if my function is not working properlly, I can see a slight asymmetry within the cube. These affects occur because when we do calculations, we do not use exact midpoints, but instead we use uneven weights. We can preprocess by making it so that these weights don't have as much as an effect.
+          </p>
+
+          <div align="middle">
+              <table style="width=100%">
+                  <tr>
+                      <td>
+                          <img src="images/6-tea.png" align="middle" width="400px" />
+                          <figcaption align="middle"> A slightly thin teapot.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/6-tea-extreme.png" align="middle" width="400px" />
+                          <figcaption align="middle"> An extremely thin teapot.</figcaption>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td>
+                          <img src="images/cube-1.png" align="middle" width="400px" />
+                          <figcaption align="middle"> A small cube.</figcaption>
+                      </td>
+                      <td>
+                          <img src="images/underfed-cow.png" align="middle" width="400px" />
+                          <figcaption align="middle"> An underfed cow!</figcaption>
+                      </td>
+                  </tr>
+              </table>
+          </div>
+
+          <h2 align="middle">Section III: Optional Extra Credit</h2>
+          <p>If you are not participating in the optional mesh competition, don't worry about this section!</p>
+
+          <h3 align="middle">Part 7: Design your own mesh!</h3>
+
+      </div></body>
+
 </html>
