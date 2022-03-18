@@ -1,7 +1,398 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-1 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>  
+    div.padded {  
+      padding-top: 0px;  
+      padding-right: 100px;  
+      padding-bottom: 0.25in;  
+      padding-left: 100px;  
+    }  
+  </style> 
+<title>Your Name  |  CS 184</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<br />
+<h1 align="middle">Assignment 3: PathTracer</h1>
+    <h2 align="middle">Calvin Pham</h2>
+
+    <div class="padded">
+        <o>
+
+            <h2 align="middle">Part 1: Ray Generation and Scene Intersection</h2>
+            <p>
+                For this part, the way I approached everything was to implement things step by step by following the spec. For ray generation, I first converted the given point from image space to camera space by applying a shift of -0.5 and then a transformation of multiplying the coordinates by hFov or vFov and then taking the tan() of it. Then I transformed it from camera space to world space by multiplying it with the given c2w vector.
+                For the primitive intersection parts, I used the Moller Trumbore algorithm for triangle intersection, and the given ray intersection formulas for sphere intersection.
+                For the triangle intersection, I used the Moller Trumbore algorithm which is an algorithm that very quickly calculates whether or not a ray intersects a triangle. I had to calculate E1, E2, S, S1, S2, and do various operations with them to obtain t, b1, b2, and b3, which are barycentric values and the value of where the intersection occurs. From here, we can check to see if b1, b2, and b3 all meet the barycentric requirements for the ray to hit the triangle or not. This means we check if they all sum up to 1, and if each are non-negative.
+            </p>
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/banana.png" align="middle" width="400px" />
+                            <figcaption align="middle">Banana color.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/plane.png" align="middle" width="400px" />
+                            <figcaption align="middle">A plane.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/cube.png" align="middle" width="400px" />
+                            <figcaption align="middle">A cube.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBempty.png" align="middle" width="400px" />
+                            <figcaption align="middle">Empty.</figcaption>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres.png" align="middle" width="400px" />
+                            <figcaption align="middle">Empty with sphere.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBgems.png" align="middle" width="400px" />
+                            <figcaption align="middle">Pretty gems.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <br />
+            <br />
+
+
+            <h2 align="middle">Part 2: Bounding Volume Hierarchy</h2>
+            <p>
+                For my BVH construction algorithim, I recursively constructed the tree.
+                For the splitting point heuristic, I took the min and max of the x, y, z coordinates for each primitive,
+                and calculated the difference between the max coordinate and min coordinate in each dimension, and chose
+                the dimension to split at that has the highest difference. Likewise, I summed up all the coordinates of each
+                primitive and averaged them out, and used that point as the splitting point for that dimension.
+                Then I set the left and right child of each node to contain the amount given by the splitting point.
+                For leaves, I checked if the total number of start to end primitives were greater than the passed in leaf max value or not and handled it from there.
+                Debugging this took a very long time and made me very sad.
+            </p>
+
+
+
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/cow.png" align="middle" width="400px" />
+                            <figcaption align="middle">Rasterized cow.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/maxplanck.png" align="middle" width="400px" />
+                            <figcaption align="middle">Rasterized maxplanck.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/bunnybehind.png" align="middle" width="400px" />
+                            <figcaption align="middle">Rasterized bunny from behind.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/mybunny.png" align="middle" width="400px" />
+                            <figcaption align="middle">Rasterized bunny.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+                <p>For a few scenes with moderately complex geometry include the cow, rabbit, and head. For the cow, without BVH acceleration, it would take upwards to around a minute, but with BVH acceleration, it would take only under a second. Likewise, for the other two geometric structures, it would take an extremely painful amount of time to render, but with BVH acceleration, it would take around the same time to render as it would for the cow, which has magnitudes less amount of triangles. This is surprising, yet very welcome. </p>
+            </div>
+            <br />
+            <br />
+
+
+            <h2 align="middle">Part 3: Direct Illumination</h2>
+
+            <p>
+                For estimate_direct_lighting_hemisphere we want to basically follow the formula given in lecture.
+                We want to sample a certain amount of times, and for every sample, calculate the new ray,
+                and set min_t to EPS_F. Then if the ray does intersect the bvh, then we can use the given
+                reflection equation to calculate L_out. When we have iterated through all of our samples,
+                then we can normalize and average out L_out.
+            </p>
+
+            <p>
+                Likewise, for estimate_direct_lighting_importance, it is very similar to the previous part,
+                but instead we add a few more things. We want to directly use the light instead of using the
+                hemisphere sampling. If the light is a delta light, meaning there are no interuptions,
+                that means that we just sample that light once because it doesn't bounce off of anything, otherwise,
+                we sample like the previous time. We sample and calculate with the new given formulas,
+                and check if w_in.z is greater than 0 or not to check if the light is behind the surface at the hit point,
+                and if it is, we continue. Then we calculate and set up everything just like before, also noting some minor differences.
+            </p>
+
+            <p>
+                There were many issues that made rendering not work at all, so I had to painfully go back to
+                every single previous part and change some things, which took a very long time.
+                For example one minor yet sinister mistake was that for part 1-1, I calculated the ray wrong,
+                which led to the bunny not being able to render at all.
+            </p>
+
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBbunny_H_64_32.png" align="middle" width="400px" />
+                            <figcaption align="middle">Hemisphere bunny.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/bunny_64_32.png" align="middle" width="400px" />
+                            <figcaption align="middle">Importance bunny.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/hqempty.png" align="middle" width="400px" />
+                            <figcaption align="middle">Hemisphere empty.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/empty_64_32.png" align="middle" width="400px" />
+                            <figcaption align="middle">Importance empty.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <br /><br />
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_l_1.png" align="middle" width="400px" />
+                            <figcaption align="middle">Lambertian sphere: 1 ray.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_l_4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Lambertian sphere: 4 rays.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_l_16.png" align="middle" width="400px" />
+                            <figcaption align="middle">Lambertian sphere: 16 rays.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_l_64.png" align="middle" width="400px" />
+                            <figcaption align="middle">Lambertian sphere: 64 rays.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+
+            <p>Between uniform hemisphere sampling and light sampling, the biggest difference was that hemisphere sampling was very grainy compared to light sampling even when both were at very high rendering qualities. This is because light sampling gives good optimizations such as importance sampling giving weight to more high frequency areas than basic sampling. Likewise, we also sample all the lights directly instead of the point where the lights themselves arrive. This is why light sampling gives a less grainy image compared to hemisphere sampling. </p>
+
+        <br /><br />
+
+
+            <h2 align="middle">Part 4: Global Illumination</h2>
+
+            <p>
+                For my implementation of indirect lighting, we want to have a recursive algorithim that calls upon itself because we are dealing with recursive light bounces. So first, I made sure there was at least one recursive light bounce, and for every consecutive one, it relied on russian roulette for whether or not it executes or not, or if depth reaches one or not. For each iteration, I sampled to create a ray and checked if it intersected with the bounding box, and if so I called the reflection equation recursively, the same equation as the other parts. If it was affected by russian roulette, I normalized it by the russian roulette chance. Likewise if it met none of the conditions to recurse, I just calculated one_bounce_radiance and returned it. One mistake I made was that we needed to call one_bounce_radiance at the lowest level, otherwise, it would make the equation return 0 and thus give a pitch black image. Likewise, I had many segfaults and spent a long time trying to debug it. It turns out even though the spec says to delete a line in est_radience_global_illumination, we needed to actually keep it.
+            </p>
+
+
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/1024-sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">Global sphere.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part5-bunny.png" align="middle" width="400px" />
+                            <figcaption align="middle">The bunny.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/empty.png" align="middle" width="400px" />
+                            <figcaption align="middle">Empty room.</figcaption>
+                        </td>
+                        <!--                         <td>
+                                    <img src="images/empty_64_32.png" align="middle" width="400px" />
+                                    <figcaption align="middle">Importance empty.</figcaption>
+                                </td> -->
+                    </tr>
+                </table>
+            </div>
+
+            <br /><br />
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/directspheres.png" align="middle" width="400px" />
+                            <figcaption align="middle">Direct Illumination Sphere.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/Indirectspheres.png" align="middle" width="400px" />
+                            <figcaption align="middle">Indirect Illumination Sphere.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <p> With direct illumination, we only get the source lights rays, while with indirect illumination we get the bounce back from the other surfaces.</p>
+
+            <br /><br />
+
+
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/0bunny.png" align="middle" width="400px" />
+                            <figcaption align="middle">0 max ray depth bunny.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/1bunny.png" align="middle" width="400px" />
+                            <figcaption align="middle">1 max ray depth bunny.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/2bunny.png" align="middle" width="400px" />
+                            <figcaption align="middle">2 max ray depth bunny.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/3bunny.png" align="middle" width="400px" />
+                            <figcaption align="middle">3 max ray depth bunny.</figcaption>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/100bunny.png" align="middle" width="400px" />
+                            <figcaption align="middle">100 max ray depth bunny.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <p>For 0 max depth, there will no light bounces so the room will be dark. For one max depth, there will be on multi-bouncing, so the ceiling is dark. For any number greater, it will look similar and fully lit up.</p>
+
+            <br /><br />
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/1-sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">1 sample per pixel.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/2-sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">2 sample per pixel.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/4-sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">4 sample per pixel.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/8-sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">8 sample per pixel.</figcaption>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/16-sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">16 sample per pixel.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/64-sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">64 sample per pixel.</figcaption>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/1024-sphere.png" align="middle" width="400px" />
+                            <figcaption align="middle">1024 sample per pixel.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <p>The more samples we have per pixel, the higher the quality goes up.</p>
+            <br /><br />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <h2 align="middle">Part 5: Adaptive Sampling</h2>
+
+            <p>
+                For my implementation of adaptive sampling, I modified raytrace_pixel so that it would include checking if a pixel could stop sampling every (samples per batch * x)th pixel. We did not need to drastically change the code but we just need to keep track of two variables s1, and s2 which are the color illuminance. Likewise, when we check to see if we can stop sampling the pixel, we calculate the necessary variables and check to see if I <= maxTolerance * mu. If it is, then we can stop early, update the samplecountbufer, and update the pixel with the monteCarlo estimate so far. If it does not every short circuit early, then we just do everything as normal. This part is just a modification the already implemented raytrace_pixel.
+                One insidious bug I had was that in my calculations, I used the int 1, instead of the float 1.0. This took a very long time to debug and made me very sad.
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/part5-bunny.png" align="middle" width="400px" />
+                            <figcaption align="middle">Global sphere.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/part5-bunnyrate.png" align="middle" width="400px" />
+                            <figcaption align="middle">Global bunny.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+
+                </table>
+            </div>
+            <br /><br />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </o></div>
+</body>
 </html>
+
+
+
+
