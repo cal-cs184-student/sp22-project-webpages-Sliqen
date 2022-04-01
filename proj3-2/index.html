@@ -1,7 +1,156 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>  
+    div.padded {  
+      padding-top: 0px;  
+      padding-right: 100px;  
+      padding-bottom: 0.25in;  
+      padding-left: 100px;  
+    }  
+  </style> 
+<title>Your Name  |  CS 184</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<br />
+<h1 align="middle">Assignment 3: PathTracer</h1>
+    <h2 align="middle">Calvin Pham</h2>
+
+    <div class="padded">
+
+            <h2 align="middle">Part 1</h2>
+            <p>
+                For my implementation of this part, I used the staff's precompiled code and basically followed the spec for the implementations. For task 1, and task 2, it is straightforward: just follow the spec. For part 3, I broke it down into steps: First calculate eta, check if wo.z is > 0 or not, and set eta to 1/ior or ior. Second calculate the calculate 1-n^2*1-cos^20 < 0 to see if we short circuit and return false or not. Note that 1-cos^2 = sin^2. Third, if we fufill this requirement, then set wi and return true. This is a helper function to the relatively straightforward sample_f function. For sampling GlassBSDF, we just follow the spec basically.
+
+                My images look the way they do because of the way multibounce works.The more you increase depth, the more numbers of times light can bounce and the more reflected things look.
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_refract_m0.png" align="middle" width="400px" />
+                            <figcaption align="middle">Ray depth of 0.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_refract_m1.png" align="middle" width="400px" />
+                            <figcaption align="middle">Ray depth of 1.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_refract_m2.png" align="middle" width="400px" />
+                            <figcaption align="middle">Ray depth of 2.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_refract_m3.png" align="middle" width="400px" />
+                            <figcaption align="middle">Ray depth of 3.</figcaption>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_refract_m4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Ray depth of 4.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_refract_m5.png" align="middle" width="400px" />
+                            <figcaption align="middle">Ray depth of 5.</figcaption>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_refract_m100.png" align="middle" width="400px" />
+                            <figcaption align="middle">Ray depth of 100.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>
+                The new multibounce affects that appear in each image are as follows.
+                For depth of 0, there is no bounce therefore the image is black.
+                For depth of 1, there is one bounce, so the area is lit up with minimal reflection.
+                For depth of 2, the enviornment bounces off the first sphere and is seen in the sphere itself.
+                For depth of 3, the second sphere gets the enviornment reflected off of it as well.
+                For depth of 4, the first sphere has the second sphere within it as a reflection instead of the second sphere being pitch black as before.
+                For depth of 5 and 100, the only noticible difference is that the images are lighter.
+            </p>
+            <p>
+                The bounce numbers relate to the particular effects that appear because each increase in max ray depth allows each light particle
+                to bounce off another surface, and therefore, since we are dealing with glass, allows us to see more reflections
+                of the enviornment within the glass sphere to a certain extent.
+            </p>
+            <br /><br /><br />
+
+            <h2 align="middle">Part 4</h2>
+            <p>
+                For my implementation of this part, I followed the spec in implementing the single function generate_ray_for_thin_lens. First I ported my code from Project 3-1, Part 1 to here to get the original pinhole ray variables. Then I used the formula for pLens given by the spec. Then for pFocus, I calculated the intersection by scaling the ported and calculated variables. Then I created a ray from pLens and pFocus and made adjustments as stated by the specs.
+
+                The difference between a pinhole and a lens camera model is that for a pinhole, we have a singular hole where light comes through which gives us a perfect view, meaning there are no blurry parts so the image is always focused while for a lens, the image can be blurry at parts because we have a larger area for light to shine through. With the lens camera model, we can adjust it to have some parts blurry while some parts focused.
+            </p>
+
+            <div align="middle">
+                <table style="width=100%">
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_refract_test_depth_4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Depth of 4.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_refract_test_depth_45.png" align="middle" width="400px" />
+                            <figcaption align="middle">Depth of 4.5.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_refract_test_depth_5.png" align="middle" width="400px" />
+                            <figcaption align="middle">Depth of 5.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_refract_test_depth_55.png" align="middle" width="400px" />
+                            <figcaption align="middle">Depth of 5.5.</figcaption>
+                        </td>
+                    </tr>
+                    <br />
+                    <br />
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_refract_test_aperture_1.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperture of 1.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_refract_test_aperture_2.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperture of 2.</figcaption>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="images/CBspheres_refract_test_aperture_3.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperture of 3.</figcaption>
+                        </td>
+                        <td>
+                            <img src="images/CBspheres_refract_test_aperture_4.png" align="middle" width="400px" />
+                            <figcaption align="middle">Aperture of 4.</figcaption>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <p>
+                For the focus, they look different because for each increase of depth focus, we focus deeper into the 3D enviornment itself, so the more the depth, the deeper we will focus, with all other depths being out of focus.
+
+                For the aperture, they look different because the more we increase it, the more singular we focus on the scene so the higher the aperture, the more blurry some parts of the 3D enviornment are.
+            </p>
+
+
+
+        </o></div>
+</body>
 </html>
+
+
+
+
