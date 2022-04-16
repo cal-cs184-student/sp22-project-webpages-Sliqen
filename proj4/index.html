@@ -1,7 +1,361 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 4 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Mesh Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2017</h1>
+<h1 align="middle">Project 4: Cloth Simulator</h1>
+<h2 align="middle">CALVIN PHAM, CS184-the5</h2>
+
+<br><br>
+
+    <div>
+
+        <h2 align="middle">Part I: Masses and springs</h2>
+        <p>
+            For part 1, the way that I implemented followed the outlined 2 phases in the spec. For the first part, implementing point masses, I just generated the point mass parameters based on the orientation. For the coordinates, to calculate each, we need to have it so that we first split it to get a unit length which would be width/height divided by num_width/height_points. And for each loop we multiply the point number by this unit length. When we create the point mass we emplace_back it to the point_masses array.
+            Likewise, for the springs we have a lot of conditions to check. In a nutshell, if it appears to be the case that if we were to implement a spring between point_mass_A and point_mass_B and point_mass_B is out of range, then we do not implement a spring between the two points at all. I just integer looped over every point_masses index and applied the springs where they fit.
+        </p>
+
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/part1-img1.png" align="middle" width="400px" />
+                        <figcaption align="middle">Pinned 2 image 1.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/part1-img2.png" align="middle" width="400px" />
+                        <figcaption align="middle">Pinned 2 image 2.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/part1-img3.png" align="middle" width="400px" />
+                        <figcaption align="middle">Pinned 2 image 3.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/part1-img4.png" align="middle" width="400px" />
+                        <figcaption align="middle">Pinned 2 image 4.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/part1-no-shearing.png" align="middle" width="400px" />
+                        <figcaption align="middle">No shearing.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/part1-shearing-only.png" align="middle" width="400px" />
+                        <figcaption align="middle">Only shearing.</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="images/part1-all-options.png" align="middle" width="400px" />
+                        <figcaption align="middle">All options.</figcaption>
+                    </td>
+                </tr>
+            </table>
+            <p><b>NOTE: ZOOM IN OR OPEN IMAGE ON ANOTHER TAB TO SEE FULL CORRECT NON-CHOPPY RESOLUTION</b></p>
+        </div>
+        <br />
+
+        <h2 align="middle"> Part 2: Simulation via numerical integration </h2>
+
+        <p>
+            For part 2, I implemented it in 3 subparts per the spec.
+            For part 2.1, I first summed up all the forces in the external_accelerations vector of 3D vectors. Then I computed F = ma and added it onto every pre-cleared point mass.
+            For the strings I iterated through every one of them and constructed Fs using the given formula and specifications, and combined them to each of the point mass pairs. We also need to involve the unit vector so that we can properly scale each force. I did not do this initially and everything disapeared.
+
+            For part 2.2, I just followed the formula given and plugged in the values basically.
+
+            For part 2.3, I followed the spec and only adjusted everything if the magnitude of the difference between the two point masses exceeded the spring length * 1.1. And if it did I corrected it adding or subtracting the difference between the magnitude with the spring length * 1.1, and multiplying it with the difference between a & b unit vector.
+
+            Debugging issues I ran into include animating things would make the grid disapear, which I fixed by correctly adding in unit vectors, and the cloth being a different color than usual, which I correctly by adjusting my double loopings in part 1, which a decent amount of time to correct. There are many times where I would either need to subtract or add, so I am not sure if I chose the wrong sign and if these small errors would affect me later on or not.
+        </p>
+
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/part2-high-ks.png" align="middle" width="400px" />
+                        <figcaption align="middle">At very high ks values, the cloth acts weirdly.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/part2-resting-wire.png" align="middle" width="400px" />
+                        <figcaption align="middle">Resting wire.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/part2-resting-normal.png" align="middle" width="400px" />
+                        <figcaption align="middle">Resting normal.</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <p>
+            For changing the spring constant ks, at a very low ks, the top center of the cloth is more droopy and when it drops, it is more lighter, while for a very high ks, the top center of the cloth is more rigid and the drop is more rigid as well and at very high levels of ks, it weirdly rolls into itself.
+            For density, a higher number gives a heavier cloth with a faster drop while a lower number gives a lighter cloth with a slower drop. The high number seems like it is more heavier in general, so gravity can be seen to have a greater effect. While the low number seems like it is more lighter in general.
+        </p>
+
+        <br /><br />
+
+        <h2 align="middle">Part III: Handling collisions with other objects</h2>
+        <p>
+            For this part, I just followed the spec. For cloth.cpp I iterated and called the collide function for each point mass.
+            For sphere, the way I checked if it intersected was that I found if the magnitude between the origin and the position of the point mass was less than equal to the radius, then we are inside the sphere, which is straightforward. Then I just calculated the tangent by making the direction between the origin and position into a unit vector and multiplying it by the radius to get the exact point of sphere intersection. Likewise, I made the correction vector and updated the position.
+            For the plane, I did the same. To check if it itersected the plane I checked whether or not the dot product between the normal and difference between position and point's signs stayed the same for the last and current position and if the signs were opposite from one another then we intersected the plane.
+
+            To find the "radius" of the plane, I found the dot product between the differnce between the last position and point with the normal, so I could transform the plane radius to be the new normal.
+            Likewise, I plugged values in and corrected the position like for the sphere.
+            One very difficult thing about this part was that my cloth would literally just slide off the plane. To fix this, I made sure the surface offset was only applied to the y axis because that was where the cloth visually and vertically intersected the plane.
+
+        </p>
+
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/p3-500-mesh.png" align="middle" width="400px" />
+                        <figcaption align="middle">ks = 500.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p3-500-normal.png" align="middle" width="400px" />
+                        <figcaption align="middle">ks = 500.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p3-5000-mesh.png" align="middle" width="400px" />
+                        <figcaption align="middle">ks = 5000.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p3-5000-normal.png" align="middle" width="400px" />
+                        <figcaption align="middle">ks = 5000.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p3-50000-mesh.png" align="middle" width="400px" />
+                        <figcaption align="middle">ks = 50000.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p3-50000-normal.png" align="middle" width="400px" />
+                        <figcaption align="middle">ks = 50000.</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="images/p3-lie-mesh.png" align="middle" width="400px" />
+                        <figcaption align="middle">Lying mesh.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p3-lie-normal.png" align="middle" width="400px" />
+                        <figcaption align="middle">Lying normal.</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br />
+
+
+        <h2 align="middle"> Part 4: Handling self-collisions </h2>
+        <p>
+            For this part, the way I implemented it was that I followed the spec.
+            First to implement the hash position, I used a very simple one, which was to multiply together w, h, and t, with them being the given variables in the spec, modded by pos and rounded to the nearest number.
+            For building the spatial map, I also just followed the spec: I created a new vector if I needed to and I took that vecor from the map, pushed a point mass back into it, and then re-put that vector back into the map. This part was extremely difficult to debug because of the points and stuff and one horrible bug was that I did not know that we were suposed to initiate the point mass vector on the heap because we call delete on it every time we call the function. This messed me up real bad and made my life miserable.
+            For self collide, I followed the spec and just looped through the list vectors that belonged to the same group as the passed in point masses. For each point mass I checked if it was close enough and if it was I considered it into my correction vector. At the end, if we had atleast one point that was added into the correction vector, I applied the correction vector onto the point mass. This was also a headache because I had the heap error, and I didn't know what to do so I re-did everything step by step, and also had some pointer issues. This was also a bad time in general.
+        </p>
+        <br />
+
+
+
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/p4-initial.png" align="middle" width="400px" />
+                        <figcaption align="middle">Initial state.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p4-drop.png" align="middle" width="400px" />
+                        <figcaption align="middle">ks = Drop state.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p4-rest.png" align="middle" width="400px" />
+                        <figcaption align="middle">ks = Rest state.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p4-low-ks.png" align="middle" width="400px" />
+                        <figcaption align="middle">Low ks value.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p4-high-ks.png" align="middle" width="400px" />
+                        <figcaption align="middle">High ks value.</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="images/p4-low-density.png" align="middle" width="400px" />
+                        <figcaption align="middle">Low density value.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p4-high-density.png" align="middle" width="400px" />
+                        <figcaption align="middle">High density value.</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br />
+        <p>
+            For low density, everything folds on itself easier and is lighter, and seperate a lot faster on the initial drop.
+            For high density, everything is heavier and wrinklier and stay's together more because of a higher weight I guess.
+            For a low ks, there seems to be it so that everything is more crumpled together and it seems like the cloth is made up of more smaller patches that interact with other patches.
+            For a high ks, it seems like it seperates easier as if the cloth is made up of large chunks that iteract with the other large patches.
+
+        </p>
+
+        <br />
+        <h2 align="middle"> Part 5: Shaders </h2>
+        <p>
+            For each part, I just followed the spec where I had to implement the formulas. There were some errors that resulted from not being familiar with the language and some syntactical errors.
+
+            A shader program is basically a program that runs in parallel on the GPU that execute sections of the graphics pipeline. This is because it would be very slow for applications sunch as video games to load in graphics 60 fps if it were not for these shader programs.
+
+            Vertex and fragment shaders work together to create lighting and material effects by the vertex shaders modifying geometry to give a textured look while fragment shaders change the color to give it any look one wants. With these combined we can do create something like a 3d basketball.
+
+            The Blinn-Phong shading model is a shading model that combines the ambient, diffuse, and specular shading elements of a 3D object to create a phong reflection.
+        </p>
+        <p>
+            For displacement and bump mapping they are different because bumps makes the illusion of bumps by changing the lighting while displacement actually changes the 3d geometry. The two shaders react by being in general more higher quality because we upscale the vertical and horizontal resolutions. I prefer bump mapping because it looks better, while for displacement, it changes the whole cloth instead of select parts of it in my case.
+        </p>
+
+        <div align="middle">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/p5-phong-full.png" align="middle" width="400px" />
+                        <figcaption align="middle">Blinn-Phong whole.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p5-phong-diffuse.png" align="middle" width="400px" />
+                        <figcaption align="middle">Blinn-Phong diffuse.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p5-phong-ambient.png" align="middle" width="400px" />
+                        <figcaption align="middle">Blinn-Phong ambient.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p5-phong-specular.png" align="middle" width="400px" />
+                        <figcaption align="middle">Blinn-Phong specular.</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="images/p5-texture-1.png" align="middle" width="400px" />
+                        <figcaption align="middle">Eren Yeager texture.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p5-texture-3.png" align="middle" width="400px" />
+                        <figcaption align="middle">Vegeta kneeling.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p5-texture-4.png" align="middle" width="400px" />
+                        <figcaption align="middle">Rent a GF chapter 218.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p5-texture-7.png" align="middle" width="400px" />
+                        <figcaption align="middle">Rent a GF chapter 218 image 2.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p5-bump-sphere-only-128.png" align="middle" width="400px" />
+                        <figcaption align="middle">Bump sphere 128.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p5-bump-cloth-only-128.png" align="middle" width="400px" />
+                        <figcaption align="middle">Bump cloth 128.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p5-bump-sphere-16.png" align="middle" width="400px" />
+                        <figcaption align="middle">Bump sphere 16.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p5-bump-sphere-128.png" align="middle" width="400px" />
+                        <figcaption align="middle">Bump sphere 128.</figcaption>
+                    </td>
+                </tr>
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p5-displacement-sphere-16.png" align="middle" width="400px" />
+                        <figcaption align="middle">Displacement sphere 16.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p5-displacement-sphere-128.png" align="middle" width="400px" />
+                        <figcaption align="middle">Displacement sphere 128.</figcaption>
+                    </td>
+                </tr>
+
+                <br />
+                <tr>
+                    <td>
+                        <img src="images/p5-mirror-cloth.png" align="middle" width="400px" />
+                        <figcaption align="middle">Mirror cloth.</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/p5-mirror-sphere.png" align="middle" width="400px" />
+                        <figcaption align="middle">Mirror sphere.</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </div></body>
 </html>
